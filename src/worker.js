@@ -121,12 +121,14 @@ async function handleWebhook(request, env, webhookPath, corsHeaders) {
             if (!response.ok && sandboxJwt) {
                 response = await sendNotification(deviceToken, apnsPayload, sandboxJwt, true);
             }
+            const apnsId = response.headers.get("apns-unique-id");
             if (response.ok) {
+                console.log(`Sent to ${deviceToken.slice(0, 8)}... apns-unique-id: ${apnsId}`);
                 sent++;
                 validDevices.push(deviceToken);
             } else {
                 const errorBody = await response.text();
-                console.error(`APNs error for ${deviceToken.slice(0, 8)}...: ${response.status} ${errorBody}`);
+                console.error(`APNs error for ${deviceToken.slice(0, 8)}...: ${response.status} ${errorBody} apns-unique-id: ${apnsId}`);
                 if (response.status !== 400 && response.status !== 410) {
                     validDevices.push(deviceToken);
                 }
