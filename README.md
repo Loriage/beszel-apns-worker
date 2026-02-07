@@ -53,13 +53,15 @@ To use a custom domain instead of the default `*.workers.dev` URL:
 4. Set `preview_urls` to `false` to disable preview deployments
 5. Redeploy: `npm run deploy`
 
-## iOS App Configuration
+## Configuration
+
+### iOS App Configuration
 
 1. In the Beszel iOS app, go to **Settings** → **Notifications**
 2. Enable notifications and enter your worker URL
 3. Copy the generated webhook URL
 
-## Beszel Server Configuration
+### Beszel Server Configuration
 
 1. In Beszel web UI, go to **Settings** → **Notifications**
 2. Add a **Generic Webhook** and paste the webhook URL from the iOS app
