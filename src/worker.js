@@ -114,7 +114,10 @@ async function handleWebhook(request, env, webhookPath, corsHeaders) {
 
     for (const deviceToken of record.devices) {
         try {
-            const response = await sendNotification(deviceToken, apnsPayload, jwt);
+            let response = await sendNotification(deviceToken, apnsPayload, jwt, false);
+            if (!response.ok) {
+                response = await sendNotification(deviceToken, apnsPayload, jwt, true);
+            }
             if (response.ok) {
                 sent++;
                 validDevices.push(deviceToken);
@@ -142,7 +145,7 @@ async function handleWebhook(request, env, webhookPath, corsHeaders) {
     return jsonResponse({ success: true, sent, failed }, 200, corsHeaders);
 }
 
-async function sendNotification(deviceToken, payload, jwt, useSandbox = true) {
+async function sendNotification(deviceToken, payload, jwt, useSandbox = false) {
     const host = useSandbox ? APNS_HOST_SANDBOX : APNS_HOST;
     return fetch(`https://${host}/3/device/${deviceToken}`, {
         method: "POST",
