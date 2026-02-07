@@ -10,9 +10,9 @@ A Cloudflare Worker that delivers push notifications from [Beszel](https://githu
 
 - **Cloudflare account** with Workers enabled
 - **Apple Developer account** with an APNs key:
-  1. [Apple Developer Console](https://developer.apple.com/account) → **Keys** → create a new key with **APNs** enabled
-  2. Download the `.p8` file and note the **Key ID**
-  3. Note your **Team ID** from Membership details
+    1. [Apple Developer Console](https://developer.apple.com/account) → **Keys** → create a new key with **APNs** enabled
+    2. Download the `.p8` file and note the **Key ID**
+    3. Note your **Team ID** from Membership details
 
 ## Setup
 
@@ -66,4 +66,4 @@ To use a custom domain instead of the default `*.workers.dev` URL:
 
 ## License
 
-MIT
+This project is distributed under the MIT License. See the [LICENSE](./LICENSE) file for more details.
