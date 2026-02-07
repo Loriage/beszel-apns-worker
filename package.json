@@ -1,0 +1,13 @@
+{
+  "name": "beszel-apns-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for Beszel iOS push notifications",
+  "main": "src/worker.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
