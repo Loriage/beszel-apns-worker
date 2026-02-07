@@ -1,6 +1,6 @@
 # Beszel APNs Worker
 
-A Cloudflare Worker that delivers push notifications from [Beszel](https://github.com/henrygd/beszel) to the iOS app.
+A Cloudflare Worker that delivers push notifications from [Beszel](https://github.com/henrygd/beszel) to the [Beszel iOS app](https://github.com/Loriage/Beszel-Swift-App).
 
 ```
 [Beszel Hub] --webhook--> [This Worker] --APNs--> [iOS App]
