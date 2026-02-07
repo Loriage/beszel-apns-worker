@@ -9,9 +9,9 @@ preview_urls = false
 binding = "DEVICES"
 id = "<your-kv-namespace-id>"
 
-[[routes]]
-pattern = "<your-domain>"
-custom_domain = true
+# [[routes]]
+# pattern = "<your-domain>"
+# custom_domain = true
 
 # Required secrets (set via `wrangler secret put`):
 # - APPLE_KEYID: Your APNs key ID from Apple Developer Console
