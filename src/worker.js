@@ -108,15 +108,18 @@ async function handleWebhook(request, env, webhookPath, corsHeaders) {
         alertSystemId: system || "unknown",
     };
 
-    const jwt = await createJWT(env);
+    const jwt = await createJWT(env, false);
+    const sandboxJwt = env.APPLE_SANDBOX_KEYID && env.APPLE_SANDBOX_AUTHKEY
+        ? await createJWT(env, true)
+        : null;
     let sent = 0, failed = 0;
     const validDevices = [];
 
     for (const deviceToken of record.devices) {
         try {
             let response = await sendNotification(deviceToken, apnsPayload, jwt, false);
-            if (!response.ok) {
-                response = await sendNotification(deviceToken, apnsPayload, jwt, true);
+            if (!response.ok && sandboxJwt) {
+                response = await sendNotification(deviceToken, apnsPayload, sandboxJwt, true);
             }
             if (response.ok) {
                 sent++;
@@ -160,15 +163,17 @@ async function sendNotification(deviceToken, payload, jwt, useSandbox = false) {
     });
 }
 
-async function createJWT(env) {
-    const header = { alg: "ES256", kid: env.APPLE_KEYID };
+async function createJWT(env, sandbox = false) {
+    const keyId = sandbox ? env.APPLE_SANDBOX_KEYID : env.APPLE_KEYID;
+    const authKey = sandbox ? env.APPLE_SANDBOX_AUTHKEY : env.APPLE_AUTHKEY;
+    const header = { alg: "ES256", kid: keyId };
     const claims = { iss: env.APPLE_TEAMID, iat: Math.floor(Date.now() / 1000) };
 
     const encodedHeader = base64urlEncode(JSON.stringify(header));
     const encodedClaims = base64urlEncode(JSON.stringify(claims));
     const signingInput = `${encodedHeader}.${encodedClaims}`;
 
-    const privateKey = await importPrivateKey(env.APPLE_AUTHKEY);
+    const privateKey = await importPrivateKey(authKey);
     const signature = await crypto.subtle.sign(
         { name: "ECDSA", hash: "SHA-256" },
         privateKey,
