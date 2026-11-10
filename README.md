@@ -66,6 +66,18 @@ To use a custom domain instead of the default `*.workers.dev` URL:
 1. In Beszel web UI, go to **Settings** → **Notifications**
 2. Add a **Generic Webhook** and paste the webhook URL from the iOS app
 
+### Notification names
+
+The app sends its hub name in the optional `hubName` field when registering a device. Opening the app or renaming a hub refreshes that name. Older app versions and registrations still work without it.
+
+Notifications show the hub and the webhook's `system` name when available. Generic Beszel webhooks can send the machine name as part of `title` or the first line of `message`; that text and the remaining details are preserved.
+
+Deploy the worker update before installing the updated app. Existing webhook URLs do not need to change.
+
+### Tests
+
+Run `npm test` with Node.js 22 or later. The tests use an in-memory KV store and mock APNs requests; they do not send notifications to real devices.
+
 ## License
 
 This project is distributed under the MIT License. See the [LICENSE](./LICENSE) file for more details.
