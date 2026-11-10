@@ -38,7 +38,7 @@ export default {
 };
 
 async function handleRegister(request, env, corsHeaders) {
-    const { deviceToken, instanceId, timestamp, signature } = await request.json();
+    const { deviceToken, instanceId, timestamp, signature, hubName } = await request.json();
 
     if (!deviceToken || !instanceId || !timestamp || !signature) {
         return jsonResponse({ error: "Missing required fields" }, 400, corsHeaders);
@@ -55,6 +55,8 @@ async function handleRegister(request, env, corsHeaders) {
     if (!record.devices.includes(deviceToken)) {
         record.devices.push(deviceToken);
     }
+    const name = notificationLabel(hubName);
+    if (name) record.hubName = name;
     record.seenAt = now;
 
     await env.DEVICES.put(kvKey, JSON.stringify(record));
@@ -86,12 +88,22 @@ async function handleWebhook(request, env, webhookPath, corsHeaders) {
 
     const { title, message, system, alert_type, value } = await request.json();
 
-    const msgLines = (message || "Alert triggered").trim().split("\n");
-    const summary = msgLines[0].trim();
-    const detail = msgLines.slice(1).map((l) => l.trim()).filter((l) => l).join("\n");
+    const msgLines = typeof message === "string" ? message.trim().split("\n").map((line) => line.trim()) : [];
+    const summary = msgLines[0] || "";
+    const sourceTitle = typeof title === "string" ? title.trim().replace(/\s+/g, " ") : "";
+    const headline = sourceTitle || summary || "Alert triggered";
+    const detailLines = sourceTitle && sourceTitle !== summary ? msgLines : msgLines.slice(1);
+    const detail = detailLines.filter(Boolean).join("\n");
+    const hubName = notificationLabel(record.hubName);
+    const systemName = notificationLabel(system);
 
-    const alert = { title: summary };
-    if (system) alert.subtitle = system;
+    const alert = { title: headline };
+    if (hubName) {
+        alert.title = [...new Set([hubName, systemName].filter(Boolean))].join(" · ");
+        alert.subtitle = headline;
+    } else if (systemName) {
+        alert.subtitle = systemName;
+    }
     if (detail) alert.body = detail;
 
     const apnsPayload = {
@@ -100,12 +112,12 @@ async function handleWebhook(request, env, webhookPath, corsHeaders) {
             sound: "default",
             "mutable-content": 1,
         },
-        alertSystemName: system || "Unknown",
+        alertSystemName: systemName || "Unknown",
         alertName: alert_type || "alert",
         alertValue: value,
         alertCreated: Math.floor(Date.now() / 1000),
         alertHistoryId: `${instanceId}-${Date.now()}`,
-        alertSystemId: system || "unknown",
+        alertSystemId: typeof system === "string" && system ? system : "unknown",
     };
 
     const jwt = await createJWT(env, false);
@@ -163,6 +175,11 @@ async function sendNotification(deviceToken, payload, jwt, useSandbox = false) {
         },
         body: JSON.stringify(payload),
     });
+}
+
+function notificationLabel(value) {
+    if (typeof value !== "string") return "";
+    return [...value.trim().replace(/\s+/g, " ")].slice(0, 120).join("");
 }
 
 async function createJWT(env, sandbox = false) {
